@@ -1,3 +1,4 @@
+const serverHostName = 'http://viral-aroma.herokuapp.com/';
 let isAlreadyCalling = false;
 let getCalled = false;
 
@@ -63,7 +64,7 @@ function updateUserList(socketIds) {
   });
 }
 
-const socket = io.connect('http://viral-aroma.herokuapp.com/');
+const socket = io.connect(serverHostName);
 
 socket.on("update-user-list", ({ users }) => {
   updateUserList(users);
