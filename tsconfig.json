@@ -22,7 +22,9 @@
         "!./node_modules/**/*.ts",
         "./node_modules/typescript/lib/lib.es6.d.ts"
     ],
-    "exclude": [],
+    "exclude": [
+        "node_modules"
+    ],
     "files": [
         "./lib/cli.ts",
         "./lib/index.ts",
