@@ -12,7 +12,6 @@ Requires: nodejs and npm
 - 1-1 videocalls
 - Whiteboard functionality: Enable drawing on the screen without touch input (finger tracking using machine vision)
 - Emotion dependent style transfer: Use bio signals to classify the emotional state of the user. The output video will be styled using neural styling based on the emotion detected.
-- 
 
 ## Implementation
 
