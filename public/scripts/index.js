@@ -1,4 +1,4 @@
-const serverHostName = 'https://viral-aroma.herokuapp.com/';
+const serverHostName = "localhost:5000" //'127.0.0.1:5000' //'https://viral-aroma.herokuapp.com/';
 let isAlreadyCalling = false;
 let getCalled = false;
 
@@ -49,6 +49,31 @@ async function callUser(socketId) {
     offer,
     to: socketId
   });
+  // this fetch below is an attempt to do something similar to https://github.com/aiortc/aiortc/blob/ea116d073129a022805b0a0741ae82a68c4cf3ca/examples/server/client.js#L84
+  var offerReceived =  peerConnection.localDescription;
+  var codec;
+  return fetch('/call-user', { 
+    body: JSON.stringify({
+      sdp: offerReceived.sdp,
+      type: offerReceived.type, 
+      video_transform: "edges", //TODO: need to make it interactive, not hardcode
+      offer: offer,
+      to: socketId,
+      from: socket.id
+    }),
+    headers:{
+      'Content-Type': "application/json",
+    },
+    method: 'POST'
+  }).then(function(response){
+    return response.json()
+  }).then(function(answer){
+    console.log("Got answer: sdp: "+answer.sdp + " type: "+ answer.type)
+    return peerConnection.setRemoteDescription(answer);
+  }).catch(function(e){
+    alert(e);
+  })
+
 }
 
 function updateUserList(socketIds) {
