@@ -25,7 +25,9 @@ pcs = []
 
 video_objects = dict() #id -> VideoTransformTrack
 
-# serverHostName = 'https://viral-aroma.herokuapp.com/'
+# Change the hostname for localhost in development mode.
+serverHostName = os.environ.get('HOST', 'localhost')
+print(serverHostName)
 sio = socketio.AsyncServer()
 
 class VideoTransformTrack(MediaStreamTrack):
@@ -36,83 +38,91 @@ class VideoTransformTrack(MediaStreamTrack):
     kind = "video"
 
     def __init__(self, track, transform, own_id, peer_id):
-        super().__init__()  # don't forget this!
+        super().__init__()
         self.track = track
         self.transform = transform
         self.own_id = own_id 
         self.peer_id = peer_id
-
+  
     async def recv(self):
         if self.peer_id in video_objects:
-            print(f"[{self.own_id}]: Showing other video..")
             frame = await video_objects[self.peer_id].track.recv()
             peer_transform = video_objects[self.peer_id].transform
-            # frame = await self.track.recv()
-
             if peer_transform == "cartoon":
-                img = frame.to_ndarray(format="bgr24")
-
-                # prepare color
-                img_color = cv2.pyrDown(cv2.pyrDown(img))
-                for _ in range(6):
-                    img_color = cv2.bilateralFilter(img_color, 9, 9, 7)
-                img_color = cv2.pyrUp(cv2.pyrUp(img_color))
-
-                # prepare edges
-                img_edges = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-                img_edges = cv2.adaptiveThreshold(
-                    cv2.medianBlur(img_edges, 7),
-                    255,
-                    cv2.ADAPTIVE_THRESH_MEAN_C,
-                    cv2.THRESH_BINARY,
-                    9,
-                    2,
-                )
-                img_edges = cv2.cvtColor(img_edges, cv2.COLOR_GRAY2RGB)
-
-                # combine color and edges
-                img = cv2.bitwise_and(img_color, img_edges)
-                # img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-                # rebuild a VideoFrame, preserving timing information
-                new_frame = VideoFrame.from_ndarray(img, format="bgr24")
-                new_frame.pts = frame.pts
-                new_frame.time_base = frame.time_base
-                return new_frame
+                return self._cartoon_transform(frame)
             elif peer_transform == "edges":
-                # perform edge detection
-                img = frame.to_ndarray(format="bgr24")
-                img = cv2.cvtColor(cv2.Canny(img, 100, 200), cv2.COLOR_GRAY2BGR)
-
-                # rebuild a VideoFrame, preserving timing information
-                new_frame = VideoFrame.from_ndarray(img, format="bgr24")
-                new_frame.pts = frame.pts
-                new_frame.time_base = frame.time_base
-                return new_frame
+                return self._edge_tranform(frame)
             elif peer_transform == "rotate":
-                # rotate image
-                img = frame.to_ndarray(format="bgr24")
-                rows, cols, _ = img.shape
-                M = cv2.getRotationMatrix2D((cols / 2, rows / 2), frame.time * 45, 1)
-                img = cv2.warpAffine(img, M, (cols, rows))
-
-                # rebuild a VideoFrame, preserving timing information
-                new_frame = VideoFrame.from_ndarray(img, format="bgr24")
-                new_frame.pts = frame.pts
-                new_frame.time_base = frame.time_base
-                return new_frame
+                return self._rotate_transform(frame)
             else:
                 return frame
         else:
-            print(f"[{self.own_id}]: Showing own video...")
             frame = await self.track.recv()
             return frame
+
+    def _cartoon_transform(self, frame):
+      img = frame.to_ndarray(format="bgr24")
+
+      # prepare color
+      img_color = cv2.pyrDown(cv2.pyrDown(img))
+      for _ in range(6):
+          img_color = cv2.bilateralFilter(img_color, 9, 9, 7)
+      img_color = cv2.pyrUp(cv2.pyrUp(img_color))
+
+      # prepare edges
+      img_edges = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+      img_edges = cv2.adaptiveThreshold(
+          cv2.medianBlur(img_edges, 7),
+          255,
+          cv2.ADAPTIVE_THRESH_MEAN_C,
+          cv2.THRESH_BINARY,
+          9,
+          2,
+      )
+      img_edges = cv2.cvtColor(img_edges, cv2.COLOR_GRAY2RGB)
+
+      # combine color and edges
+      img = cv2.bitwise_and(img_color, img_edges)
+      # rebuild a VideoFrame, preserving timing information
+      new_frame = VideoFrame.from_ndarray(img, format="bgr24")
+      new_frame.pts = frame.pts
+      new_frame.time_base = frame.time_base
+      return new_frame
+
+    def _edge_tranform(self, frame):
+      # perform edge detection
+      img = frame.to_ndarray(format="bgr24")
+      img = cv2.cvtColor(cv2.Canny(img, 100, 200), cv2.COLOR_GRAY2BGR)
+
+      # rebuild a VideoFrame, preserving timing information
+      new_frame = VideoFrame.from_ndarray(img, format="bgr24")
+      new_frame.pts = frame.pts
+      new_frame.time_base = frame.time_base
+
+      return new_frame
+
+    def _rotate_transform(self, frame):
+      # rotate image
+      img = frame.to_ndarray(format="bgr24")
+      rows, cols, _ = img.shape
+      M = cv2.getRotationMatrix2D((cols / 2, rows / 2), frame.time * 45, 1)
+      img = cv2.warpAffine(img, M, (cols, rows))
+
+      # rebuild a VideoFrame, preserving timing information
+      new_frame = VideoFrame.from_ndarray(img, format="bgr24")
+      new_frame.pts = frame.pts
+      new_frame.time_base = frame.time_base
+
+      return new_frame
 
 async def index(request):
     content = open(os.path.join(ROOT, "../public/index.html"), "r").read()
     return web.Response(content_type="text/html", text=content)
+
 async def javascript(request):
     content = open(os.path.join(ROOT, "../public/scripts/index.js"), "r").read()
     return web.Response(content_type="application/javascript", text=content)
+
 async def css(request):
     content = open(os.path.join(ROOT, "../public/styles.css"), "r").read()
     return web.Response(content_type="text/css", text=content)
@@ -132,7 +142,7 @@ async def offer(request):
     def log_info(msg, *args):
         logger.info(pc_id + " " + msg, *args)
 
-    @pc.on("track") # ???
+    @pc.on("track")
     def on_track(track):
         log_info("Track %s received", track.kind)
         print("received track!")
@@ -161,12 +171,7 @@ async def offer(request):
         await sio.emit("create-connection", {
             "from": params["from"]
         }, to=params["to"])
-
-    # await sio.emit("call-made", {
-    #     "offer": params["offer"],
-    #     "socket": params["from"]
-    # }, to=params["to"])
-
+        
     return web.Response(
         content_type="application/json",
         text=json.dumps(
@@ -218,8 +223,8 @@ async def disconnect(sid):
     }, broadcast=True, include_self=True)
 
 if __name__ == "__main__":
-    host = 'localhost' #'127.0.0.1'
-    port = 5000
+    host = serverHostName
+    port = os.environ.get("PORT")
     ssl_context = None
     #######################
     app = web.Application()

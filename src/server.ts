@@ -1,3 +1,10 @@
+/*
+DEPRECATED:
+Initial implementation of the webserver in TypeScript. 
+Replaced with the Python server so Numpy, PyTorch, and 
+OpenCV functions are better supported.
+*/
+
 import express, { Application } from "express";
 import socketIO, { Server as SocketIOServer } from "socket.io";
 import { createServer, Server as HTTPServer } from "http";
