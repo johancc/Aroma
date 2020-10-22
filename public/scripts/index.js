@@ -1,4 +1,4 @@
-const serverHostName = 'https://viral-aroma.herokuapp.com';
+const serverHostName = 'https://viral-aroma.herokuapp.com/';
 let isAlreadyCalling = false;
 let getCalled = false;
 
@@ -124,19 +124,19 @@ socket.on("remove-user", ({ socketId }) => {
 });
 
 socket.on("call-made", async data => {
-  // if (getCalled) {
-  //   const confirmed = confirm(
-  //     `User "Socket: ${data.socket}" wants to call you. Do accept this call?`
-  //   );
+  if (getCalled) {
+    const confirmed = confirm(
+      `User "Socket: ${data.socket}" wants to call you. Do accept this call?`
+    );
 
-  //   if (!confirmed) {
-  //     socket.emit("reject-call", {
-  //       from: data.socket
-  //     });
+    if (!confirmed) {
+      socket.emit("reject-call", {
+        from: data.socket
+      });
 
-  //     return;
-  //   }
-  // }
+      return;
+    }
+  }
   console.log("receiver setting remote description")
   await peerConnection.setRemoteDescription(
     new RTCSessionDescription(data.offer)
@@ -179,12 +179,7 @@ peerConnection.addEventListener('track', function(evt) {
   else
       document.getElementById('audio').srcObject = evt.streams[0];
 });
-// peerConnection.ontrack = function({ streams: [stream] }) {
-//   const remoteVideo = document.getElementById("remote-video");
-//   if (remoteVideo) {
-//     remoteVideo.srcObject = stream;
-//   }
-// };
+
 
 navigator.getUserMedia(
   { video: true, audio: true },
