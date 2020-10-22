@@ -45,17 +45,6 @@ function createUserItemContainer(socketId) {
 }
 
 async function callUser(socketId, is_caller, mode) {
-  // const offer = await peerConnection.createOffer();
-  // console.log("setting local description")
-  // await peerConnection.setLocalDescription(new RTCSessionDescription(offer));
-  // await peerConnection.setLocalDescription(offer);
-  
-
-  // socket.emit("call-user", {
-  //   offer,
-  //   to: socketId
-  // });
-  // this fetch below is an attempt to do something similar to https://github.com/aiortc/aiortc/blob/ea116d073129a022805b0a0741ae82a68c4cf3ca/examples/server/client.js#L84
 
   return peerConnection.createOffer().then(function(offer) {
       return peerConnection.setLocalDescription(offer);
@@ -95,7 +84,7 @@ async function callUser(socketId, is_caller, mode) {
   .then(function(response){
     return response.json()
   }).then(function(answer){
-    // console.log("Got answer: sdp: "+answer.sdp + " type: "+ answer.type)
+    console.log("Got answer: sdp: "+answer.sdp + " type: "+ answer.type)
     console.log("setting remote description")
     return peerConnection.setRemoteDescription(answer);
   }).catch(function(e){

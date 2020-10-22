@@ -237,7 +237,7 @@ if __name__ == "__main__":
     sio.attach(app)
     web.run_app(
         app,
-        access_log=None,
+        access_log= None,
         host = host,
         port = port,
         ssl_context=ssl_context
