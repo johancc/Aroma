@@ -172,6 +172,7 @@ socket.on("call-rejected", data => {
 // connect audio / video
 peerConnection.addEventListener('track', function(evt) {
   console.log("getting track...")
+  console.log(evt)
   if (evt.track.kind == 'video'){
       document.getElementById('remote-video').srcObject = evt.streams[0];
   }

@@ -192,6 +192,8 @@ async def callUser(sid, data):
 
 @sio.on("make-answer")
 async def makeAnswer(sid, data):
+    print('Answering call for {}'.format(sid))
+    print(data)
     await sio.emit("answer-made", {
         "socket": sid,
         "answer": data["answer"]
