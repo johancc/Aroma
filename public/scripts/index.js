@@ -1,4 +1,4 @@
-const serverHostName = 'https://viral-aroma.herokuapp.com:8080';
+const serverHostName = 'https://viral-aroma.herokuapp.com';
 let isAlreadyCalling = false;
 let getCalled = false;
 
