@@ -27,7 +27,7 @@ video_objects = dict() # id -> VideoTransformTrack
 
 # Change the hostname for localhost in development mode.
 serverHostName = os.environ.get('HOST', 'localhost')
-print(serverHostName)
+
 sio = socketio.AsyncServer()
 
 class VideoTransformTrack(MediaStreamTrack):
@@ -227,7 +227,6 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     ssl_context = None
 
-    print('Starting application on {}:{}'.format(host, port))
     #######################
     app = web.Application()
     app.on_shutdown.append(on_shutdown)
