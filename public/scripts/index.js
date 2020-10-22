@@ -1,4 +1,4 @@
-const serverHostName = "localhost:5000" //'127.0.0.1:5000' //'https://viral-aroma.herokuapp.com/';
+const serverHostName = 'https://viral-aroma.herokuapp.com/';
 let isAlreadyCalling = false;
 let getCalled = false;
 
@@ -45,17 +45,6 @@ function createUserItemContainer(socketId) {
 }
 
 async function callUser(socketId, is_caller, mode) {
-  // const offer = await peerConnection.createOffer();
-  // console.log("setting local description")
-  // await peerConnection.setLocalDescription(new RTCSessionDescription(offer));
-  // await peerConnection.setLocalDescription(offer);
-  
-
-  // socket.emit("call-user", {
-  //   offer,
-  //   to: socketId
-  // });
-  // this fetch below is an attempt to do something similar to https://github.com/aiortc/aiortc/blob/ea116d073129a022805b0a0741ae82a68c4cf3ca/examples/server/client.js#L84
 
   return peerConnection.createOffer().then(function(offer) {
       return peerConnection.setLocalDescription(offer);
@@ -81,7 +70,7 @@ async function callUser(socketId, is_caller, mode) {
       body: JSON.stringify({
         sdp: offerReceived.sdp,
         type: offerReceived.type, 
-        video_transform: mode, //TODO: need to make it interactive, not hardcode
+        video_transform: mode, 
         is_caller: is_caller,
         offer: offerReceived,
         to: socketId,
@@ -96,7 +85,6 @@ async function callUser(socketId, is_caller, mode) {
   .then(function(response){
     return response.json()
   }).then(function(answer){
-    // console.log("Got answer: sdp: "+answer.sdp + " type: "+ answer.type)
     console.log("setting remote description")
     return peerConnection.setRemoteDescription(answer);
   }).catch(function(e){
@@ -136,19 +124,6 @@ socket.on("remove-user", ({ socketId }) => {
 });
 
 socket.on("call-made", async data => {
-  // if (getCalled) {
-  //   const confirmed = confirm(
-  //     `User "Socket: ${data.socket}" wants to call you. Do accept this call?`
-  //   );
-
-  //   if (!confirmed) {
-  //     socket.emit("reject-call", {
-  //       from: data.socket
-  //     });
-
-  //     return;
-  //   }
-  // }
   console.log("receiver setting remote description")
   await peerConnection.setRemoteDescription(
     new RTCSessionDescription(data.offer)
@@ -190,12 +165,6 @@ peerConnection.addEventListener('track', function(evt) {
   else
       document.getElementById('audio').srcObject = evt.streams[0];
 });
-// peerConnection.ontrack = function({ streams: [stream] }) {
-//   const remoteVideo = document.getElementById("remote-video");
-//   if (remoteVideo) {
-//     remoteVideo.srcObject = stream;
-//   }
-// };
 
 navigator.getUserMedia(
   { video: true, audio: true },
