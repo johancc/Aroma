@@ -23,11 +23,11 @@ logger = logging.getLogger("pc")
 existingSockets = []
 pcs = []
 
-video_objects = dict() #id -> VideoTransformTrack
+video_objects = dict() # id -> VideoTransformTrack
 
 # Change the hostname for localhost in development mode.
-serverHostName = os.environ.get('HOST', '0.0.0.0')
-
+serverHostName = os.environ.get('HOST', 'localhost')
+print(serverHostName)
 sio = socketio.AsyncServer()
 
 class VideoTransformTrack(MediaStreamTrack):
@@ -223,8 +223,8 @@ async def disconnect(sid):
     }, broadcast=True, include_self=True)
 
 if __name__ == "__main__":
-    host = serverHostName
-    port = os.environ.get("PORT")
+    host = '0.0.0.0'
+    port = os.environ.get("PORT", 5000)
     ssl_context = None
     #######################
     app = web.Application()
@@ -239,5 +239,5 @@ if __name__ == "__main__":
         access_log=None,
         host = host,
         port = port,
-        ssl_context = ssl_context
-    )  
+        ssl_context=ssl_context
+    )
