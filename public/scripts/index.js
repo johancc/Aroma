@@ -1,4 +1,4 @@
-const serverHostName = 'https://viral-aroma.herokuapp.com/';
+const serverHostName = 'https://viral-aroma.herokuapp.com:8080';
 let isAlreadyCalling = false;
 let getCalled = false;
 
@@ -61,7 +61,6 @@ async function callUser(socketId, is_caller, mode) {
       return peerConnection.setLocalDescription(offer);
   }).then(function() {
           // wait for ICE gathering to complete
-          console.log("uau")
           return new Promise(function(resolve) {
               if (peerConnection.iceGatheringState === 'complete') {
                   resolve();

@@ -224,8 +224,10 @@ async def disconnect(sid):
 
 if __name__ == "__main__":
     host = '0.0.0.0'
-    port = os.environ.get("PORT", 5000)
+    port = int(os.environ.get("PORT", 8080))
     ssl_context = None
+
+    print('Starting application on {}:{}'.format(host, port))
     #######################
     app = web.Application()
     app.on_shutdown.append(on_shutdown)
