@@ -29,6 +29,23 @@ video_objects = dict() # id -> VideoTransformTrack
 serverHostName = os.environ.get('HOST', 'localhost')
 
 sio = socketio.AsyncServer(async_mode='aiohttp', cors_allowed_origins='*', ping_timeout=35)
+TURN_SERVER_URL = '52.15.48.109:3478'
+TURN_SERVER_USERNAME = 'user'
+TURN_SERVER_CREDENTIAL = 'root'
+PC_CONFIG = {
+  "iceServers": [
+    {
+      "urls": 'turn:' + TURN_SERVER_URL + '?transport=tcp',
+      "username": TURN_SERVER_USERNAME,
+      "credential": TURN_SERVER_CREDENTIAL
+    },
+    {
+      "urls": 'turn:' + TURN_SERVER_URL + '?transport=udp',
+      "username": TURN_SERVER_USERNAME,
+      "credential": TURN_SERVER_CREDENTIAL
+    }
+  ]
+};
 
 class VideoTransformTrack(MediaStreamTrack):
     """
@@ -136,7 +153,7 @@ async def offer(request):
     params = await request.json() # params should have sdp, type, video_transform
     offer = RTCSessionDescription(sdp=params["sdp"], type=params["type"])
 
-    pc = RTCPeerConnection()
+    pc = RTCPeerConnection(PC_CONFIG)
     pc_id = "PeerConnection(%s)" % uuid.uuid4()
 
     def log_info(msg, *args):
@@ -148,12 +165,14 @@ async def offer(request):
         print("received track!")
         if track.kind == "video":
             log_info(params["video_transform"])
+            print('transforming stream...')
             local_video = VideoTransformTrack(
                 track, 
                 transform=params["video_transform"], 
                 own_id=params["from"], 
                 peer_id=params["to"]
             )
+            print('transformed!')
             print(f"from={params['from']} and to={params['to']}")
             print(len(video_objects))
             video_objects[params["from"]] = local_video
@@ -207,7 +226,7 @@ async def rejectCall(sid, data):
 
 @sio.event
 async def connect(sid, data):
-    # print(f"connected!, sid={sid} and data={data}")
+    print(f"connected!, sid={sid} and data={data}")
     if sid not in existingSockets:
         await sio.emit("update-user-list", {
             "users": existingSockets
