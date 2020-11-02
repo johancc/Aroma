@@ -28,7 +28,7 @@ video_objects = dict() # id -> VideoTransformTrack
 # Change the hostname for localhost in development mode.
 serverHostName = os.environ.get('HOST', 'localhost')
 
-sio = socketio.AsyncServer(async_mode='aiohttp')
+sio = socketio.AsyncServer(async_mode='aiohttp', cors_allowed_origins='*', ping_timeout=35)
 
 class VideoTransformTrack(MediaStreamTrack):
     """

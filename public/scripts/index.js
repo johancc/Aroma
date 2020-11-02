@@ -6,10 +6,28 @@ const existingCalls = [];
 
 const { RTCPeerConnection, RTCSessionDescription } = window;
 
-var config = {
-  sdpSemantics: 'unified-plan'
+// Config variables: change them to point to your own servers
+const TURN_SERVER_URL = '52.15.48.109:3478';
+const TURN_SERVER_USERNAME = 'user';
+const TURN_SERVER_CREDENTIAL = 'root';
+// WebRTC config: you don't have to change this for the example to work
+// If you are testing on localhost, you can just use PC_CONFIG = {}
+const PC_CONFIG = {
+  iceServers: [
+    {
+      urls: 'turn:' + TURN_SERVER_URL + '?transport=tcp',
+      username: TURN_SERVER_USERNAME,
+      credential: TURN_SERVER_CREDENTIAL
+    },
+    {
+      urls: 'turn:' + TURN_SERVER_URL + '?transport=udp',
+      username: TURN_SERVER_USERNAME,
+      credential: TURN_SERVER_CREDENTIAL
+    }
+  ]
 };
-const peerConnection = new RTCPeerConnection(config);
+
+const peerConnection = new RTCPeerConnection(PC_CONFIG);
 
 function unselectUsersFromList() {
   const alreadySelectedUser = document.querySelectorAll(
